@@ -67,5 +67,21 @@ router.get('/summary', auth, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+router.get('/today/count', auth, async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of today
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
+
+        const count = await Attendance.countDocuments({
+            timestamp: { $gte: today, $lt: tomorrow }
+        });
+        res.json({ count });
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
+});
+
 
 module.exports = router;

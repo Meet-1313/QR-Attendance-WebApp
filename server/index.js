@@ -12,6 +12,8 @@ const attendanceRoutes = require('./routes/attendance');
 const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/students'); 
 const notificationRoutes = require('./routes/notifications'); 
+const profileRoutes = require('./routes/profile');
+const classRoutes = require('./routes/classes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,6 +36,8 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/auth', authRoutes); 
 app.use('/api/students', studentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/classes', classRoutes);
 
 // --- Socket.IO Setup ---
 const server = http.createServer(app);

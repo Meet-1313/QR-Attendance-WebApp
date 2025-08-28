@@ -34,7 +34,7 @@ router.post('/low-attendance', async (req, res) => {
         // 4. Calculate percentage and filter for low attendance
         const lowAttendanceStudents = [];
         for (const student of enrolledStudents) {
-            const record = studentAttendance.find(sa => sa._id.equals(student._id));
+           const record = studentAttendance.find(sa => sa._id.toString() === student._id.toString());
             const daysPresent = record ? record.daysPresent : 0;
             const percentage = (daysPresent / totalClassDays) * 100;
 

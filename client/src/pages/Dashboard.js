@@ -1,52 +1,71 @@
-// client/src/pages/Dashboard.js
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Grid } from '@mui/material';
 
-import React, { useState } from 'react';
 import QRCodeGenerator from '../components/QRCodeGenerator';
 import LiveAttendance from '../components/LiveAttendance';
 import AttendanceSummaryChart from '../components/AttendanceSummaryChart';
-import { Box, Grid, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
 
 const Dashboard = () => {
-    const [selectedClass, setSelectedClass] = useState('CS101');
+    const [classes, setClasses] = useState([]);
+    const [selectedClass, setSelectedClass] = useState('');
 
-    const handleClassChange = (event) => {
-        setSelectedClass(event.target.value);
-    };
+    const fetchClasses = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { 'x-auth-token': token } };
+            const response = await axios.get('http://localhost:5000/api/classes', config);
+            setClasses(response.data);
+
+            if (response.data.length > 0 && !selectedClass) {
+                setSelectedClass(response.data[0].classCode);
+            }
+        } catch (error) {
+            console.error("Failed to fetch classes", error);
+        }
+    }, [selectedClass]);
+
+    useEffect(() => {
+        fetchClasses();
+    }, [fetchClasses]);
 
     return (
-        <Box sx={{ flexGrow: 1, p: 3 }}>
-            <Typography variant="h4" gutterBottom>Teacher Dashboard</Typography>
+        <Box sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h4" gutterBottom>Dashboard</Typography>
+                <FormControl sx={{ minWidth: 240 }} size="small">
+                    <InputLabel id="class-select-label">Select Class</InputLabel>
+                    <Select
+                        labelId="class-select-label"
+                        value={selectedClass}
+                        label="Select Class"
+                        onChange={(e) => setSelectedClass(e.target.value)}
+                    >
+                        {classes.length > 0 ? (
+                            classes.map((cls) => (
+                                <MenuItem key={cls._id} value={cls.classCode}>
+                                    {cls.name}
+                                </MenuItem>
+                            ))
+                        ) : (
+                            <MenuItem disabled>Create a class first</MenuItem>
+                        )}
+                    </Select>
+                </FormControl>
+            </Box>
             
-            <FormControl fullWidth sx={{ mb: 4 }}>
-                <InputLabel id="class-select-label">Select Class</InputLabel>
-                <Select
-                    labelId="class-select-label"
-                    value={selectedClass}
-                    label="Select Class"
-                    onChange={handleClassChange}
-                >
-                    <MenuItem value="CS101">Computer Science 101</MenuItem>
-                    <MenuItem value="MA203">Calculus II</MenuItem>
-                    <MenuItem value="PH150">Physics for Beginners</MenuItem>
-                </Select>
-            </FormControl>
-            
-            <Grid container spacing={4}>
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+                {/* Left Column */}
                 <Grid item xs={12} md={5}>
                     <QRCodeGenerator classId={selectedClass} />
                 </Grid>
-                
+                {/* Right Column */}
                 <Grid item xs={12} md={7}>
                     <LiveAttendance />
                 </Grid>
-
-                {/* --- THIS IS THE UPDATED PART --- */}
-                {/* We wrap the chart in a container grid to center it */}
-                <Grid item xs={12} container justifyContent="center" sx={{ mt: 4 }}>
-                    {/* The chart itself now only takes up 10 of 12 columns on large screens */}
-                    <Grid item xs={12} lg={10}>
-                        <AttendanceSummaryChart />
-                    </Grid>
+                {/* Bottom Row */}
+                <Grid item xs={12}>
+                    <AttendanceSummaryChart />
                 </Grid>
             </Grid>
         </Box>
